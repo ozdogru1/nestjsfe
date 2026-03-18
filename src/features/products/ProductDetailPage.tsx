@@ -33,6 +33,7 @@ export function ProductDetailPage() {
         setProduct(normalizeProduct(data));
       } catch (err) {
         const apiError = err as ApiError;
+        if (apiError.status === 401) return;
         const message =
           apiError.status === 404
             ? 'Ürün bulunamadı.'

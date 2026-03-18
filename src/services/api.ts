@@ -35,6 +35,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (!response.ok) {
     const message = data?.message || data?.error || 'Beklenmeyen bir hata oluştu.';
     const error: ApiError = { status: response.status, message };
+    if (response.status === 401) {
+      localStorage.removeItem('access_token');
+      window.dispatchEvent(new Event('auth:logout'));
+    }
     throw error;
   }
 

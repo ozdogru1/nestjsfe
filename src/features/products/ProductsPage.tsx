@@ -27,6 +27,7 @@ export function ProductsPage() {
       setProducts(normalized);
     } catch (err) {
       const apiError = err as ApiError;
+      if (apiError.status === 401) return;
       setError(apiError.message || 'Ürünler getirilemedi.');
     } finally {
       setLoading(false);
@@ -85,6 +86,7 @@ export function ProductsPage() {
       setPanelOpen(false);
     } catch (err) {
       const apiError = err as ApiError;
+      if (apiError.status === 401) return;
       setError(apiError.message || 'Kayıt sırasında hata oluştu.');
     } finally {
       setSaving(false);
@@ -100,6 +102,7 @@ export function ProductsPage() {
       setProducts((prev) => prev.filter((item) => item.id !== product.id));
     } catch (err) {
       const apiError = err as ApiError;
+      if (apiError.status === 401) return;
       setError(apiError.message || 'Silme işlemi başarısız oldu.');
     } finally {
       setSaving(false);

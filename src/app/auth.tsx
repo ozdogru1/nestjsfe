@@ -24,16 +24,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token]);
 
+  useEffect(() => {
+    const handleLogout = () => setToken(null);
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, []);
+
   const login = async (email: string, password: string) => {
     const response = await api.auth.login(email, password);
-    setToken(response.access_token);
+    const nextToken = response.access_token;
+    localStorage.setItem(TOKEN_KEY, nextToken);
+    setToken(nextToken);
   };
 
   const register = async (email: string, password: string) => {
     await api.auth.register(email, password);
   };
 
-  const logout = () => setToken(null);
+  const logout = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    setToken(null);
+  };
 
   const value = useMemo(
     () => ({

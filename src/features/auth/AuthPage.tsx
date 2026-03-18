@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+﻿import { FormEvent, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../app/auth';
 import { ApiError } from '../../services/api';
@@ -42,7 +42,13 @@ export function AuthPage({ mode }: Props) {
       }
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Bir hata oluştu.');
+      const message =
+        apiError.message === 'Email already in use.'
+          ? 'Bu e-posta zaten kullanılıyor.'
+          : apiError.message === 'Invalid credentials.'
+            ? 'E-posta veya şifre hatalı.'
+            : apiError.message || 'Bir hata oluştu.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -94,7 +100,9 @@ export function AuthPage({ mode }: Props) {
             />
           </div>
 
-          {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          )}
           {success && (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
               {success}
