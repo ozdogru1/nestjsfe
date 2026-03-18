@@ -14,7 +14,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div>
               <p className="font-display text-lg font-semibold">Product Hub</p>
-              <p className="text-xs text-steel">Yönetim Paneli</p>
+              <p className="text-xs text-steel">YÃ¶netim Paneli</p>
             </div>
           </Link>
           <nav className="flex items-center gap-3 text-sm font-semibold text-steel">
@@ -26,10 +26,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 }`
               }
             >
-              Ürünler
+              ÃœrÃ¼nler
             </NavLink>
             <button onClick={logout} className="btn btn-ghost">
-              Çýkýþ Yap
+              Ã‡Ä±kÄ±ÅŸ Yap
             </button>
           </nav>
         </div>

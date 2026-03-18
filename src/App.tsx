@@ -3,6 +3,7 @@ import { AuthProvider } from './app/auth';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthPage } from './features/auth/AuthPage';
+import { ProductDetailPage } from './features/products/ProductDetailPage';
 import { ProductsPage } from './features/products/ProductsPage';
 
 export default function App() {
@@ -19,6 +20,16 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <ProductsPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProductDetailPage />
                 </Layout>
               </ProtectedRoute>
             }

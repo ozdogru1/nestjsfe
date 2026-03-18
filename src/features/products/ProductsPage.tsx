@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api, ApiError } from '../../services/api';
 import { Product } from '../../types/product';
 import { ProductForm } from './ProductForm';
+import { currencyFormatter, normalizeProduct } from './productUtils';
 
-const DEFAULT_PAGE_SIZE = 6;
-
-function normalizeProduct(item: any): Product {
-  return {
-    id: item.id ?? item._id ?? item.uuid ?? item.code ?? Math.random().toString(36),
-    name: item.name ?? item.title ?? 'Ýsimsiz Ürün',
-    description: item.description ?? item.detail ?? '',
-    price: item.price ?? item.amount ?? undefined,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-  };
-}
+const DEFAULT_PAGE_SIZE = 3;
 
 export function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,7 +14,7 @@ export function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(DEFAULT_PAGE_SIZE);
+  const pageSize = DEFAULT_PAGE_SIZE;
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -36,7 +27,7 @@ export function ProductsPage() {
       setProducts(normalized);
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Ürünler getirilemedi.');
+      setError(apiError.message || 'ÃœrÃ¼nler getirilemedi.');
     } finally {
       setLoading(false);
     }
@@ -78,36 +69,30 @@ export function ProductsPage() {
     setPanelOpen(false);
   };
 
-  const handleSave = async (payload: { name: string; description: string; price: number | null }) => {
+  const handleSave = async (payload: { name: string; description: string; price: number }) => {
     setSaving(true);
     setError(null);
     try {
       if (activeProduct) {
-        const updated = await api.products.update(activeProduct.id, {
-          ...payload,
-          price: payload.price ?? undefined,
-        });
+        const updated = await api.products.update(activeProduct.id, payload);
         setProducts((prev) =>
           prev.map((item) => (item.id === activeProduct.id ? normalizeProduct(updated) : item))
         );
       } else {
-        const created = await api.products.create({
-          ...payload,
-          price: payload.price ?? undefined,
-        });
+        const created = await api.products.create(payload);
         setProducts((prev) => [normalizeProduct(created), ...prev]);
       }
       setPanelOpen(false);
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Kayýt sýrasýnda hata oluþtu.');
+      setError(apiError.message || 'KayÄ±t sÄ±rasÄ±nda hata oluÅŸtu.');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (product: Product) => {
-    if (!window.confirm(`${product.name} ürününü silmek istiyor musunuz?`)) return;
+    if (!window.confirm(`${product.name} Ã¼rÃ¼nÃ¼nÃ¼ silmek istiyor musunuz?`)) return;
     setSaving(true);
     setError(null);
     try {
@@ -115,7 +100,7 @@ export function ProductsPage() {
       setProducts((prev) => prev.filter((item) => item.id !== product.id));
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Silme iþlemi baþarýsýz oldu.');
+      setError(apiError.message || 'Silme iÅŸlemi baÅŸarÄ±sÄ±z oldu.');
     } finally {
       setSaving(false);
     }
@@ -126,9 +111,9 @@ export function ProductsPage() {
       <section className="card p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl font-semibold">Ürün Yönetimi</h2>
+            <h2 className="font-display text-2xl font-semibold">ÃœrÃ¼n YÃ¶netimi</h2>
             <p className="text-sm text-steel">
-              Ürünlerinizi tek panelden yönetin, arayýn ve hýzlýca güncelleyin.
+              ÃœrÃ¼nlerinizi tek panelden yÃ¶netin, arayÄ±n ve hÄ±zlÄ±ca gÃ¼ncelleyin.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -136,14 +121,14 @@ export function ProductsPage() {
               Yenile
             </button>
             <button className="btn btn-primary" onClick={openCreate}>
-              + Yeni Ürün
+              + Yeni ÃœrÃ¼n
             </button>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <input
             className="input flex-1 min-w-[220px]"
-            placeholder="Ürün ara..."
+            placeholder="ÃœrÃ¼n ara..."
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -161,9 +146,9 @@ export function ProductsPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section className="space-y-4">
           {loading ? (
-            <div className="card p-6 text-sm text-steel">Ürünler yükleniyor...</div>
+            <div className="card p-6 text-sm text-steel">ÃœrÃ¼nler yÃ¼kleniyor...</div>
           ) : pageItems.length === 0 ? (
-            <div className="card p-6 text-sm text-steel">Gösterilecek ürün bulunamadý.</div>
+            <div className="card p-6 text-sm text-steel">GÃ¶sterilecek Ã¼rÃ¼n bulunamadÄ±.</div>
           ) : (
             <div className="grid gap-4">
               {pageItems.map((product) => (
@@ -171,14 +156,17 @@ export function ProductsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <h3 className="text-lg font-semibold text-ink">{product.name}</h3>
-                      <p className="mt-1 text-sm text-steel">{product.description || 'Açýklama yok.'}</p>
-                      {product.price !== undefined && (
-                        <p className="mt-3 text-sm font-semibold">{product.price.toLocaleString('tr-TR')} ?</p>
-                      )}
+                      <p className="mt-1 text-sm text-steel">{product.description || 'AÃ§Ä±klama yok.'}</p>
+                      <p className="mt-3 text-sm font-semibold">
+                        {currencyFormatter.format(product.price)}
+                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <Link className="btn btn-ghost" to={`/products/${product.id}`}>
+                        Detay
+                      </Link>
                       <button className="btn btn-ghost" onClick={() => openEdit(product)}>
-                        Düzenle
+                        DÃ¼zenle
                       </button>
                       <button className="btn btn-ghost" onClick={() => handleDelete(product)} disabled={saving}>
                         Sil
@@ -200,7 +188,7 @@ export function ProductsPage() {
                 disabled={safePage === 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Önceki
+                Ã–nceki
               </button>
               <button
                 className="btn btn-ghost"
@@ -214,16 +202,12 @@ export function ProductsPage() {
         </section>
 
         <section
-          className={`card p-6 transition ${
-            panelOpen ? 'opacity-100' : 'opacity-80'
-          }`}
+          className={`card p-6 transition ${panelOpen ? 'opacity-100' : 'opacity-80'}`}
         >
           <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase text-steel">Form</p>
-              <h3 className="text-lg font-semibold">
-                {activeProduct ? 'Ürün Düzenle' : 'Yeni Ürün'}
-              </h3>
+              <h3 className="text-lg font-semibold">{activeProduct ? 'ÃœrÃ¼n DÃ¼zenle' : 'Yeni ÃœrÃ¼n'}</h3>
             </div>
             {panelOpen && (
               <button className="btn btn-ghost" onClick={closePanel}>
@@ -240,7 +224,9 @@ export function ProductsPage() {
               loading={saving}
             />
           ) : (
-            <div className="text-sm text-steel">Yeni ürün eklemek veya düzenlemek için kartlarý kullanýn.</div>
+            <div className="text-sm text-steel">
+              Yeni Ã¼rÃ¼n eklemek veya dÃ¼zenlemek iÃ§in kartlarÄ± kullanÄ±n.
+            </div>
           )}
         </section>
       </div>

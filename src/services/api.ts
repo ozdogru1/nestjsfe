@@ -33,7 +33,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const data = safeJsonParse(text);
 
   if (!response.ok) {
-    const message = data?.message || data?.error || 'Beklenmeyen bir hata oluştu.';
+    const message = data?.message || data?.error || 'Beklenmeyen bir hata oluÅŸtu.';
     const error: ApiError = { status: response.status, message };
     throw error;
   }

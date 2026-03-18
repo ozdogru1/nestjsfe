@@ -3,7 +3,7 @@ import { Product } from '../../types/product';
 
 type Props = {
   initial?: Product | null;
-  onSave: (payload: { name: string; description: string; price: number | null }) => void;
+  onSave: (payload: { name: string; description: string; price: number }) => void;
   onCancel: () => void;
   loading?: boolean;
 };
@@ -11,7 +11,7 @@ type Props = {
 export function ProductForm({ initial, onSave, onCancel, loading }: Props) {
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [price, setPrice] = useState(initial?.price?.toString() ?? '');
+  const [price, setPrice] = useState(initial ? initial.price.toString() : '');
 
   const isEdit = Boolean(initial?.id);
 
@@ -23,6 +23,7 @@ export function ProductForm({ initial, onSave, onCancel, loading }: Props) {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (parsedPrice === null) return;
     onSave({
       name: name.trim(),
       description: description.trim(),
@@ -30,11 +31,13 @@ export function ProductForm({ initial, onSave, onCancel, loading }: Props) {
     });
   };
 
+  const showPriceError = price.trim().length > 0 && parsedPrice === null;
+
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="label" htmlFor="name">
-          Ürün Adý
+          ÃœrÃ¼n AdÄ±
         </label>
         <input
           id="name"
@@ -42,24 +45,24 @@ export function ProductForm({ initial, onSave, onCancel, loading }: Props) {
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
-          placeholder="Ürün adý"
+          placeholder="ÃœrÃ¼n adÄ±"
         />
       </div>
       <div className="space-y-2">
         <label className="label" htmlFor="description">
-          Açýklama
+          AÃ§Ä±klama
         </label>
         <textarea
           id="description"
           className="input min-h-[96px]"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
-          placeholder="Kýsa açýklama"
+          placeholder="KÄ±sa aÃ§Ä±klama"
         />
       </div>
       <div className="space-y-2">
         <label className="label" htmlFor="price">
-          Fiyat (opsiyonel)
+          Fiyat
         </label>
         <input
           id="price"
@@ -68,17 +71,23 @@ export function ProductForm({ initial, onSave, onCancel, loading }: Props) {
           onChange={(event) => setPrice(event.target.value)}
           placeholder="1200"
           inputMode="decimal"
+          type="number"
+          min={0}
+          step="0.01"
+          required
         />
-        {price && parsedPrice === null && (
-          <p className="text-xs text-red-500">Geçerli bir sayý girin.</p>
-        )}
+        {showPriceError && <p className="text-xs text-red-500">GeÃ§erli bir sayÄ± girin.</p>}
       </div>
       <div className="flex flex-wrap gap-3">
-        <button className="btn btn-primary" type="submit" disabled={loading || parsedPrice === null || !name.trim()}>
-          {loading ? 'Kaydediliyor...' : isEdit ? 'Güncelle' : 'Kaydet'}
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={loading || parsedPrice === null || !name.trim()}
+        >
+          {loading ? 'Kaydediliyor...' : isEdit ? 'GÃ¼ncelle' : 'Kaydet'}
         </button>
         <button className="btn btn-ghost" type="button" onClick={onCancel}>
-          Vazgeç
+          VazgeÃ§
         </button>
       </div>
     </form>
